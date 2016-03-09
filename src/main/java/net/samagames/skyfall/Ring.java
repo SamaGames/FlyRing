@@ -38,19 +38,15 @@ public class Ring
     private void update()
     {
         if (bullets == null)
-        {
             bullets = new ShulkerBullet[BULLETS_NUMBER];
-            for (int i = 0; i < BULLETS_NUMBER; i++)
-                bullets[i] = (ShulkerBullet)center.getWorld().spawnEntity(center, EntityType.SHULKER_BULLET);
-        }
         double off = offset;
         for (int i = 0; i < BULLETS_NUMBER; i++)
         {
             Location newLocation = center.clone().add(cos(off) * radius, sin(off) * radius, 0);
-            if (bullets[i].isDead())
-                bullets[i] = (ShulkerBullet)center.getWorld().spawnEntity(center, EntityType.SHULKER_BULLET);
+            if (bullets[i] == null || bullets[i].isDead())
+                bullets[i] = (ShulkerBullet)center.getWorld().spawnEntity(newLocation, EntityType.SHULKER_BULLET);
             bullets[i].teleport(newLocation);
-            bullets[i].setVelocity(new Vector().zero());
+            bullets[i].setVelocity(new Vector(0, 0.03, 0));
             off += 2 * Math.PI / BULLETS_NUMBER;
         }
         offset += 2 * Math.PI / 80;
@@ -67,5 +63,17 @@ public class Ring
             return null;
         return new Ring(new Location(Bukkit.getWorld(location[0]), parseDouble(location[1]), parseDouble(location[2]), parseDouble(location[3])),
                 parseDouble(location[4]), parseDouble(location[5]), parseDouble(location[6]));
+    }
+
+
+    public boolean isPlayerInRing(Location location)
+    {
+        Location tmp = location.clone().subtract(center);
+        if (tmp.getZ() > 2 || tmp.getZ() < -2)
+            return (false);
+        double distance = tmp.distanceSquared(new Location(tmp.getWorld(), 0, 0, 0));
+        if (distance > radius * radius)
+            return (false);
+        return (true);
     }
 }

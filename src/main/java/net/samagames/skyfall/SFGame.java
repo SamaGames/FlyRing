@@ -4,7 +4,9 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonPrimitive;
 import net.samagames.api.games.Game;
 import net.samagames.api.games.IGameProperties;
+import net.samagames.api.games.Status;
 import net.samagames.skyfall.util.AreaUtils;
+import net.samagames.skyfall.util.SFPlayerComparator;
 import net.samagames.tools.Area;
 import net.samagames.tools.LocationUtils;
 import net.samagames.tools.Titles;
@@ -13,9 +15,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitTask;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 public class SFGame extends Game<SFPlayer>
 {
@@ -46,7 +46,6 @@ public class SFGame extends Game<SFPlayer>
 
         array = properties.getConfig("rings", new JsonArray()).getAsJsonArray();
         array.forEach(json -> this.rings.add(Ring.str2ring(json.getAsString())));
-        this.rings.forEach(ring -> ring.display(plugin));
     }
 
     @Override
@@ -85,11 +84,39 @@ public class SFGame extends Game<SFPlayer>
             if (!it.hasNext())
                 this.gameManager.kickPlayer(player, "Plus de place dans la partie. Contactez un administrateur.");
             else
-                player.teleport(it.next());
+            {
+                Location location = it.next();
+                player.teleport(location);
+                sfplayer.setSpawn(location);
+                sfplayer.setScoreboard();
+            }
             player.setHealth(4);
         }
         this.delay = 10;
         this.removeTask = plugin.getServer().getScheduler().runTaskTimer(plugin, this::removeWalls, 20L, 20L);
+        this.rings.forEach(ring -> ring.display(plugin));
+        this.plugin.getServer().getScheduler().runTaskTimerAsynchronously(this.plugin, new Runnable()
+        {
+            private int time = 0;
+
+            @Override
+            public void run()
+            {
+                this.time++;
+                for (SFPlayer arena : gamePlayers.values())
+                    arena.setScoreboardTime(this.formatTime(time));
+            }
+
+            public String formatTime(int time)
+            {
+                int mins = time / 60;
+                int secs = time - mins * 60;
+
+                String secsSTR = (secs < 10) ? "0" + Integer.toString(secs) : Integer.toString(secs);
+
+                return mins + ":" + secsSTR;
+            }
+        }, 0L, 20L);
     }
 
     public void removeWalls()
@@ -111,7 +138,35 @@ public class SFGame extends Game<SFPlayer>
             for (Player player : plugin.getServer().getOnlinePlayers())
             {
                 player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
-                Titles.sendTitle(player, 0, 30, 0, ChatColor.GOLD + (delay == 0 ? "Sautez et volez !" : "Suppression des murs dans " + delay + " secondes"), "");
+                Titles.sendTitle(player, 0, 30, 0, "", ChatColor.GOLD + (delay == 0 ? "Sautez et volez !" : "Suppression des murs dans " + delay + " secondes"));
             }
+    }
+
+    public List<Ring> getRings()
+    {
+        return rings;
+    }
+
+    public void checkPlayers()
+    {
+        if (this.status == Status.FINISHED)
+            return ;
+        List<SFPlayer> players = new ArrayList<>();
+        this.getInGamePlayers().values().forEach(sfPlayer -> {
+            if (!sfPlayer.isEliminated() && !sfPlayer.isOnGround())
+                return ;
+            if (!sfPlayer.isEliminated() && sfPlayer.isOnline())
+                players.add(sfPlayer);
+        });
+        if (players.isEmpty())
+        {
+            this.coherenceMachine.getTemplateManager().getBasicMessageTemplate().execute(Arrays.asList("Tout le monde est éliminé, aucun gagnant."));
+        }
+        else
+        {
+            Collections.sort(players, new SFPlayerComparator());
+            this.coherenceMachine.getTemplateManager().getPlayerWinTemplate().execute(players.get(0).getPlayerIfOnline(), players.get(0).getScore());
+        }
+        this.handleGameEnd();
     }
 }
