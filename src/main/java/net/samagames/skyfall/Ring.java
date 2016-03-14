@@ -24,8 +24,8 @@ public class Ring
     {
         this.center = center;
         this.radius = radius;
-        this.angleX = angleX;
-        this.angleY = angleY;
+        this.angleX = angleX * PI / 180;
+        this.angleY = angleY * PI / 180;
         this.offset = 0;
         this.bullets = null;
     }
@@ -42,7 +42,10 @@ public class Ring
         double off = offset;
         for (int i = 0; i < BULLETS_NUMBER; i++)
         {
-            Location newLocation = center.clone().add(cos(off) * radius, sin(off) * radius, 0);
+            Location tmp = new Location(center.getWorld(), cos(off) * radius, sin(off) * radius, 0);
+            tmp = new Location(center.getWorld(), tmp.getX() * cos(angleY), tmp.getY(), tmp.getZ() * cos(angleY) + tmp.getX() * sin(angleY));
+            tmp = new Location(center.getWorld(), tmp.getX(), tmp.getY() * cos(angleX) + tmp.getZ() * sin(angleX), tmp.getZ() * cos(angleX) - tmp.getY() * sin(angleX));
+            Location newLocation = center.clone().add(tmp);
             if (bullets[i] == null || bullets[i].isDead())
                 bullets[i] = (ShulkerBullet)center.getWorld().spawnEntity(newLocation, EntityType.SHULKER_BULLET);
             bullets[i].teleport(newLocation);
@@ -69,11 +72,12 @@ public class Ring
     public boolean isPlayerInRing(Location location)
     {
         Location tmp = location.clone().subtract(center);
+        tmp = new Location(center.getWorld(), tmp.getX() * cos(-angleY) - tmp.getZ() * sin(-angleY), tmp.getY(), tmp.getZ() * cos(-angleY) + tmp.getX() * sin(-angleY));
+        tmp = new Location(center.getWorld(), tmp.getX(), tmp.getY() * cos(-angleX) + tmp.getZ() * sin(-angleX), tmp.getZ() * cos(-angleX) - tmp.getY() * sin(-angleX));
         if (tmp.getZ() > 2 || tmp.getZ() < -2)
             return (false);
+        tmp = tmp.multiply(1D / radius);
         double distance = tmp.distanceSquared(new Location(tmp.getWorld(), 0, 0, 0));
-        if (distance > radius * radius)
-            return (false);
-        return (true);
+        return (distance <= 1);
     }
 }

@@ -160,7 +160,7 @@ public class SFGame extends Game<SFPlayer>
         });
         if (players.isEmpty())
         {
-            this.coherenceMachine.getTemplateManager().getBasicMessageTemplate().execute(Arrays.asList("Tout le monde est éliminé, aucun gagnant."));
+            this.coherenceMachine.getTemplateManager().getBasicMessageTemplate().execute(Arrays.asList("Tout le monde est éliminé.", "Il n'y a aucun gagnant."));
         }
         else
         {
