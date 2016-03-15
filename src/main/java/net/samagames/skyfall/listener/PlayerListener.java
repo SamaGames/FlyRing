@@ -1,6 +1,5 @@
 package net.samagames.skyfall.listener;
 
-import net.samagames.skyfall.Ring;
 import net.samagames.skyfall.SFPlayer;
 import net.samagames.skyfall.SFPlugin;
 import org.bukkit.Sound;
