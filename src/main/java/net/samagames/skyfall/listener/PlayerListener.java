@@ -62,6 +62,7 @@ public class PlayerListener implements Listener
     }
 
     @EventHandler
+    @SuppressWarnings("deprecation")
     public void onPlayerMove(PlayerMoveEvent event)
     {
         SFPlayer sfPlayer;
@@ -73,7 +74,11 @@ public class PlayerListener implements Listener
         if (event.getPlayer().isOnGround() && sfPlayer.getSpawn() != null && event.getPlayer().getLocation().distanceSquared(sfPlayer.getSpawn()) > 100)
         {
             sfPlayer.setOnGround(true);
-            plugin.getGame().getCoherenceMachine().getMessageManager().writeCustomMessage(event.getPlayer().getDisplayName() + " a aterri.", true);
+            int time = plugin.getGame().getTime();
+            plugin.getGame().getCoherenceMachine().getMessageManager().writeCustomMessage(event.getPlayer().getDisplayName() + " a atterri (" + (time < 600 ? "0" : "") + (time / 60) + ":" + (time < 10 ? "0" : "") + (time % 60) + ").", true);
+            sfPlayer.addCoins(2, "Atterrissage réussi");
+            sfPlayer.setScore(sfPlayer.getScore() + 1);
+            sfPlayer.setEndTime(System.currentTimeMillis());
         }
         else if (sfPlayer.getSpawn() != null)
             plugin.getGame().getRings().stream().filter(ring -> !sfPlayer.hasCrossedRing(ring)).forEach(ring -> {

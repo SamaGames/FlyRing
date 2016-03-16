@@ -26,6 +26,7 @@ public class SFGame extends Game<SFPlayer>
     private List<Ring> rings;
     private int delay;
     private BukkitTask removeTask;
+    private int time;
 
     public SFGame(SFPlugin plugin)
     {
@@ -97,20 +98,18 @@ public class SFGame extends Game<SFPlayer>
         this.rings.forEach(ring -> ring.display(plugin));
         this.plugin.getServer().getScheduler().runTaskTimerAsynchronously(this.plugin, new Runnable()
         {
-            private int time = 0;
-
             @Override
             public void run()
             {
-                this.time++;
+                SFGame.this.time++;
                 for (SFPlayer arena : gamePlayers.values())
                     arena.setScoreboardTime(this.formatTime(time));
             }
 
             public String formatTime(int time)
             {
-                int mins = time / 60;
-                int secs = time - mins * 60;
+                int mins = SFGame.this.time / 60;
+                int secs = SFGame.this.time - mins * 60;
 
                 String secsSTR = (secs < 10) ? "0" + Integer.toString(secs) : Integer.toString(secs);
 
@@ -168,5 +167,10 @@ public class SFGame extends Game<SFPlayer>
             this.coherenceMachine.getTemplateManager().getPlayerWinTemplate().execute(players.get(0).getPlayerIfOnline(), players.get(0).getScore());
         }
         this.handleGameEnd();
+    }
+
+    public int getTime()
+    {
+        return this.time;
     }
 }

@@ -20,6 +20,7 @@ public class SFPlayer extends GamePlayer
     private Location spawn;
     private ObjectiveSign objective;
     private SFGame game;
+    private long time;
 
     public SFPlayer(Player player)
     {
@@ -110,5 +111,15 @@ public class SFPlayer extends GamePlayer
     public Location getSpawn()
     {
         return this.spawn;
+    }
+
+    public void setEndTime(long time)
+    {
+        this.time = time;
+    }
+
+    public long getTime()
+    {
+        return time;
     }
 }
