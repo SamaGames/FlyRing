@@ -1,4 +1,4 @@
-package net.samagames.skyfall.listener;
+package net.samagames.flyring.listener;
 
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;

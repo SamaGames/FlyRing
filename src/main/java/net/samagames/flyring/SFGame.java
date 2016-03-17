@@ -1,12 +1,12 @@
-package net.samagames.skyfall;
+package net.samagames.flyring;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonPrimitive;
 import net.samagames.api.games.Game;
 import net.samagames.api.games.IGameProperties;
 import net.samagames.api.games.Status;
-import net.samagames.skyfall.util.AreaUtils;
-import net.samagames.skyfall.util.SFPlayerComparator;
+import net.samagames.flyring.util.AreaUtils;
+import net.samagames.flyring.util.SFPlayerComparator;
 import net.samagames.tools.Area;
 import net.samagames.tools.LocationUtils;
 import net.samagames.tools.Titles;

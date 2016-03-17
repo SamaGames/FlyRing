@@ -1,4 +1,4 @@
-package net.samagames.skyfall.util;
+package net.samagames.flyring.util;
 
 import net.samagames.tools.Area;
 import org.bukkit.Bukkit;

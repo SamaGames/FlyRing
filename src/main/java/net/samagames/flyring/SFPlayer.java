@@ -1,4 +1,4 @@
-package net.samagames.skyfall;
+package net.samagames.flyring;
 
 import net.samagames.api.SamaGamesAPI;
 import net.samagames.api.games.GamePlayer;

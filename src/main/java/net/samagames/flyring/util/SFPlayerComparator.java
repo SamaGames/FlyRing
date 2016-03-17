@@ -1,6 +1,6 @@
-package net.samagames.skyfall.util;
+package net.samagames.flyring.util;
 
-import net.samagames.skyfall.SFPlayer;
+import net.samagames.flyring.SFPlayer;
 
 import java.util.Comparator;
 

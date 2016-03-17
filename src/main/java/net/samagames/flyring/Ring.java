@@ -1,4 +1,4 @@
-package net.samagames.skyfall;
+package net.samagames.flyring;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;

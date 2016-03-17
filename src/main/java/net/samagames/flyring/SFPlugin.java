@@ -1,8 +1,8 @@
-package net.samagames.skyfall;
+package net.samagames.flyring;
 
 import net.samagames.api.SamaGamesAPI;
-import net.samagames.skyfall.listener.PlayerListener;
-import net.samagames.skyfall.listener.WorldListener;
+import net.samagames.flyring.listener.PlayerListener;
+import net.samagames.flyring.listener.WorldListener;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class SFPlugin extends JavaPlugin

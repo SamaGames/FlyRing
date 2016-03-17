@@ -1,7 +1,7 @@
-package net.samagames.skyfall.listener;
+package net.samagames.flyring.listener;
 
-import net.samagames.skyfall.SFPlayer;
-import net.samagames.skyfall.SFPlugin;
+import net.samagames.flyring.SFPlayer;
+import net.samagames.flyring.SFPlugin;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
