@@ -11,6 +11,7 @@ import net.samagames.tools.Area;
 import net.samagames.tools.LocationUtils;
 import net.samagames.tools.Titles;
 import org.bukkit.*;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitTask;
@@ -58,6 +59,7 @@ public class SFGame extends Game<SFPlayer>
         player.getInventory().clear();
         ItemStack wings = new ItemStack(Material.ELYTRA);
         wings.getItemMeta().spigot().setUnbreakable(true);
+        wings.addUnsafeEnchantment(Enchantment.ARROW_INFINITE, 1);
         player.getInventory().setChestplate(wings);
         player.setMaxHealth(4);
         player.setHealth(4);
