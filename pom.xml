@@ -23,6 +23,10 @@
             <id>samagames-developpers</id>
             <url>http://maven.samagames.net/developpers/</url>
         </repository>
+        <repository>
+            <id>samagames-network</id>
+            <url>http://maven.samagames.net/network/</url>
+        </repository>
     </repositories>
     <dependencies>
         <dependency>
@@ -40,7 +44,7 @@
         <dependency>
             <groupId>net.samagames</groupId>
             <artifactId>SamaGamesAPI</artifactId>
-            <version>1.0.0</version>
+            <version>4.0.0</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>

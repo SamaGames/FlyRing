@@ -52,10 +52,10 @@ public class PlayerListener implements Listener
                 eliminatePlayer(sfPlayer, player, "s'est écrasé au sol");
                 event.setDamage(3 - player.getHealth());
                 break ;
-            /*case FLY_ON_WALL:
+            case FLY_INTO_WALL:
                 eliminatePlayer(sfPlayer, player, "s'est écrasé contre un mur");
                 event.setDamage(3 - player.getHealth());
-                break ;//*/
+                break ;
             default:
                 event.setCancelled(true);
         }
