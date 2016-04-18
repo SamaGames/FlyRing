@@ -52,7 +52,7 @@ public class SFPlayer extends GamePlayer
 
     public void setScoreboardTime(String time)
     {
-        this.objective.setDisplayName(ChatColor.GOLD + "BTC" + ChatColor.WHITE + " | " + ChatColor.AQUA + time);
+        this.objective.setDisplayName(ChatColor.AQUA + "FlyRing" + ChatColor.WHITE + " | " + ChatColor.AQUA + time);
         this.updateScoreboard();
     }
 
