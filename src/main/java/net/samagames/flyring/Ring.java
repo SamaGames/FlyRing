@@ -2,6 +2,7 @@ package net.samagames.flyring;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Particle;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.ShulkerBullet;
 import org.bukkit.util.Vector;
@@ -49,6 +50,7 @@ public class Ring
             if (bullets[i] == null || bullets[i].isDead())
                 bullets[i] = (ShulkerBullet)center.getWorld().spawnEntity(newLocation, EntityType.SHULKER_BULLET);
             bullets[i].teleport(newLocation);
+            bullets[i].getWorld().spawnParticle(Particle.END_ROD, newLocation, 3);
             bullets[i].setVelocity(new Vector(0, 0.03, 0));
             off += 2 * Math.PI / BULLETS_NUMBER;
         }
