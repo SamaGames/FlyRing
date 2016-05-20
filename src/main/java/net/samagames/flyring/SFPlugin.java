@@ -20,6 +20,7 @@ public class SFPlugin extends JavaPlugin
 
         getServer().getPluginManager().registerEvents(new WorldListener(), this);
         getServer().getPluginManager().registerEvents(new PlayerListener(this), this);
+        api.getGameManager().setKeepPlayerCache(true);
     }
 
     public SamaGamesAPI getApi()
