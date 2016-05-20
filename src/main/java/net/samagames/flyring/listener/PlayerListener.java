@@ -75,7 +75,7 @@ public class PlayerListener implements Listener
         {
             sfPlayer.setOnGround(true);
             int time = plugin.getGame().getTime();
-            plugin.getGame().getCoherenceMachine().getMessageManager().writeCustomMessage(event.getPlayer().getDisplayName() + " a atterri (" + (time < 600 ? "0" : "") + (time / 60) + ":" + (time < 10 ? "0" : "") + (time % 60) + ").", true);
+            plugin.getGame().getCoherenceMachine().getMessageManager().writeCustomMessage(event.getPlayer().getDisplayName() + " a atterri (" + (time < 600 ? "0" : "") + (time / 60) + ":" + (time % 60 < 10 ? "0" : "") + (time % 60) + ").", true);
             sfPlayer.addCoins(2, "Atterrissage réussi");
             sfPlayer.setScore(sfPlayer.getScore() + 1);
             sfPlayer.setEndTime(System.currentTimeMillis());

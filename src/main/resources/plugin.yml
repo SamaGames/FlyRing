@@ -1,5 +1,5 @@
 name: Skyfall
-main: net.samagames.skyfall.SFPlugin
+main: net.samagames.flyring.SFPlugin
 version: 1.0
 
 depend: [SamaGamesAPI]

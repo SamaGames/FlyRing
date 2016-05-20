@@ -1,9 +1,11 @@
 package net.samagames.flyring;
 
+import net.samagames.api.SamaGamesAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Player;
 import org.bukkit.entity.ShulkerBullet;
 import org.bukkit.util.Vector;
 
@@ -50,7 +52,12 @@ public class Ring
             if (bullets[i] == null || bullets[i].isDead())
                 bullets[i] = (ShulkerBullet)center.getWorld().spawnEntity(newLocation, EntityType.SHULKER_BULLET);
             bullets[i].teleport(newLocation);
-            bullets[i].getWorld().spawnParticle(Particle.END_ROD, newLocation, 3);
+            for (SFPlayer sfPlayer : ((SFGame)SamaGamesAPI.get().getGameManager().getGame()).getInGamePlayers().values())
+            {
+                Player bukkitPlayer = sfPlayer.getPlayerIfOnline();
+                if (bukkitPlayer != null)
+                        bukkitPlayer.spawnParticle(sfPlayer.hasCrossedRing(this) ? Particle.VILLAGER_HAPPY : Particle.END_ROD, newLocation, 1, 0, 0, 0, 0.04D);
+            }
             bullets[i].setVelocity(new Vector(0, 0.03, 0));
             off += 2 * Math.PI / BULLETS_NUMBER;
         }
