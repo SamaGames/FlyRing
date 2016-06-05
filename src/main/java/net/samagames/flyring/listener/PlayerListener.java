@@ -8,6 +8,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 
 public class PlayerListener implements Listener
 {
@@ -90,5 +91,11 @@ public class PlayerListener implements Listener
                     event.getPlayer().playSound(event.getTo(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1F, 1F);
                 }
             });
+    }
+
+    @EventHandler
+    public void onSecondHand(PlayerSwapHandItemsEvent ev)
+    {
+        ev.setCancelled(true);
     }
 }
