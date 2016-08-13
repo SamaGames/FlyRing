@@ -8,7 +8,6 @@ import net.samagames.api.games.Status;
 import net.samagames.flyring.util.AreaUtils;
 import net.samagames.flyring.util.SFPlayerComparator;
 import net.samagames.tools.Area;
-import net.samagames.tools.LocationUtils;
 import net.samagames.tools.Titles;
 import org.bukkit.*;
 import org.bukkit.enchantments.Enchantment;
