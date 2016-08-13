@@ -6,8 +6,8 @@ import org.bukkit.Location;
 
 public class AreaUtils
 {
-    private AreaUtils(){
-
+    private AreaUtils()
+    {
     }
 
     public static Area str2area(String loc)

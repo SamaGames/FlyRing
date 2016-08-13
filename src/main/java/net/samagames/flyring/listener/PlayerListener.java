@@ -1,12 +1,16 @@
 package net.samagames.flyring.listener;
 
+import net.minecraft.server.v1_9_R2.DamageSource;
 import net.samagames.flyring.SFPlayer;
 import net.samagames.flyring.SFPlugin;
 import org.bukkit.Sound;
+import org.bukkit.craftbukkit.v1_9_R2.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 
@@ -19,10 +23,10 @@ public class PlayerListener implements Listener
         this.plugin = plugin;
     }
 
-    public void eliminatePlayer(SFPlayer sfPlayer, Player player, String reason)
+    private void eliminatePlayer(SFPlayer sfPlayer, Player player, String reason)
     {
-        plugin.getApi().getGameManager().getCoherenceMachine().getMessageManager().writeCustomMessage(
-                player.getDisplayName() + " est éliminé" + (reason == null ? "." : " (" + reason + ")."), true);
+        this.plugin.getApi().getGameManager().getCoherenceMachine().getMessageManager().writeCustomMessage(
+                player.getDisplayName() + " est mort" + (reason == null ? "." : " (" + reason + ")."), true);
         sfPlayer.eliminate();
     }
 
@@ -30,10 +34,9 @@ public class PlayerListener implements Listener
     public void onPlayerDamage(EntityDamageEvent event)
     {
         SFPlayer sfPlayer;
-        if (!(event.getEntity() instanceof Player) || !plugin.getGame().isGameStarted()
-                || (sfPlayer = plugin.getGame().getPlayer(event.getEntity().getUniqueId())) == null
-                || sfPlayer.isOnGround()
-                || sfPlayer.isEliminated())
+        if (!(event.getEntity() instanceof Player) || !this.plugin.getGame().isGameStarted()
+                || (sfPlayer = this.plugin.getGame().getPlayer(event.getEntity().getUniqueId())) == null
+                || sfPlayer.isOnGround())
         {
             event.setCancelled(true);
             return ;
@@ -42,20 +45,16 @@ public class PlayerListener implements Listener
         switch (event.getCause())
         {
             case PROJECTILE:
-                if (player.getHealth() <= 2)
-                {
-                    event.setDamage(3 - player.getHealth());
-                    eliminatePlayer(sfPlayer, player, "tué par un autre joueur");
-                }
-                event.setDamage(2);
+                event.setDamage(400D);
+                eliminatePlayer(sfPlayer, player, "tué par un autre joueur");
                 break ;
             case FALL:
-                eliminatePlayer(sfPlayer, player, "s'est écrasé au sol");
-                event.setDamage(3 - player.getHealth());
+                eliminatePlayer(sfPlayer, player, "écrasé au sol");
+                event.setDamage(400D);
                 break ;
             case FLY_INTO_WALL:
-                eliminatePlayer(sfPlayer, player, "s'est écrasé contre un mur");
-                event.setDamage(3 - player.getHealth());
+                eliminatePlayer(sfPlayer, player, "écrasé contre un mur");
+                event.setDamage(400D);
                 break ;
             default:
                 event.setCancelled(true);
@@ -67,35 +66,54 @@ public class PlayerListener implements Listener
     public void onPlayerMove(PlayerMoveEvent event)
     {
         SFPlayer sfPlayer;
-        if (!plugin.getGame().isGameStarted()
-                || (sfPlayer = plugin.getGame().getPlayer(event.getPlayer().getUniqueId())) == null
-                || sfPlayer.isOnGround()
-                || sfPlayer.isEliminated())
+        if (!this.plugin.getGame().isGameStarted()
+                || (sfPlayer = this.plugin.getGame().getPlayer(event.getPlayer().getUniqueId())) == null
+                || sfPlayer.isOnGround())
             return ;
-        if (event.getPlayer().isOnGround() && sfPlayer.getSpawn() != null && event.getPlayer().getLocation().distanceSquared(sfPlayer.getSpawn()) > 100)
+        if (event.getPlayer().isOnGround() && sfPlayer.getSpawn() != null)
         {
-            sfPlayer.setOnGround(true);
-            int time = plugin.getGame().getTime();
-            plugin.getGame().getCoherenceMachine().getMessageManager().writeCustomMessage(event.getPlayer().getDisplayName() + " a atterri (" + (time < 600 ? "0" : "") + (time / 60) + ":" + (time % 60 < 10 ? "0" : "") + (time % 60) + ").", true);
-            sfPlayer.addCoins(2, "Atterrissage réussi");
-            sfPlayer.setScore(sfPlayer.getScore() + 1);
-            sfPlayer.setEndTime(System.currentTimeMillis());
+            if (this.plugin.getGame().getEndArea().isInArea(event.getPlayer().getLocation()))
+            {
+                int time = this.plugin.getGame().getTime();
+                this.plugin.getGame().getCoherenceMachine().getMessageManager().writeCustomMessage(event.getPlayer().getDisplayName() + " a atterri (" + (time < 600 ? "0" : "") + (time / 60) + ":" + (time % 60 < 10 ? "0" : "") + (time % 60) + ").", true);
+                this.plugin.getGame().win(sfPlayer, event.getPlayer());
+                sfPlayer.addCoins(2, "Atterrissage réussi");
+                sfPlayer.setScore(sfPlayer.getScore() + 1);
+                sfPlayer.setEndTime(System.currentTimeMillis());
+            }
+            else if (event.getPlayer().getLocation().distanceSquared(this.plugin.getGame().getSpawn()) > 25)
+                ((CraftPlayer)event.getPlayer()).getHandle().damageEntity(DamageSource.FALL, 400F);
         }
         else if (sfPlayer.getSpawn() != null)
-            plugin.getGame().getRings().stream().filter(ring -> !sfPlayer.hasCrossedRing(ring)).forEach(ring -> {
+            this.plugin.getGame().getRings().stream().filter(ring -> !sfPlayer.hasCrossedRing(ring)).forEach(ring ->
+            {
                 if (ring.isPlayerInRing(event.getFrom()))
                 {
                     sfPlayer.crossRing(ring);
                     sfPlayer.addCoins(2, "Anneau passé");
                     sfPlayer.setScore(sfPlayer.getScore() + 1);
                     event.getPlayer().playSound(event.getTo(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1F, 1F);
+                    event.getPlayer().setVelocity(event.getPlayer().getLocation().getDirection().normalize().multiply(event.getPlayer().getVelocity().length()).multiply(1.1F));
                 }
             });
+    }
+
+    @EventHandler
+    public void onPlayerDeath(PlayerDeathEvent event)
+    {
+        event.getEntity().spigot().respawn();
+        event.getEntity().teleport(this.plugin.getGame().getSpawn());
     }
 
     @EventHandler
     public void onSecondHand(PlayerSwapHandItemsEvent ev)
     {
         ev.setCancelled(true);
+    }
+
+    @EventHandler
+    public void onDropItem(PlayerDropItemEvent event)
+    {
+        event.setCancelled(true);
     }
 }

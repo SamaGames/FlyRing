@@ -23,7 +23,7 @@ public class Ring
     private double offset;
     private ShulkerBullet[] bullets;
 
-    public Ring(Location center, double radius, double angleX, double angleY)
+    private Ring(Location center, double radius, double angleX, double angleY)
     {
         this.center = center;
         this.radius = radius;
@@ -33,38 +33,38 @@ public class Ring
         this.bullets = null;
     }
 
-    public void display(SFPlugin plugin)
+    void display(SFPlugin plugin)
     {
         plugin.getServer().getScheduler().runTaskTimer(plugin, this::update, 1, 1);
     }
 
     private void update()
     {
-        if (bullets == null)
-            bullets = new ShulkerBullet[BULLETS_NUMBER];
-        double off = offset;
-        for (int i = 0; i < BULLETS_NUMBER; i++)
+        if (this.bullets == null)
+            this.bullets = new ShulkerBullet[BULLETS_NUMBER];
+        double off = this.offset;
+        for (int i = 0; i < Ring.BULLETS_NUMBER; i++)
         {
-            Location tmp = new Location(center.getWorld(), cos(off) * radius, sin(off) * radius, 0);
-            tmp = new Location(center.getWorld(), tmp.getX() * cos(angleY), tmp.getY(), tmp.getZ() * cos(angleY) + tmp.getX() * sin(angleY));
-            tmp = new Location(center.getWorld(), tmp.getX(), tmp.getY() * cos(angleX) + tmp.getZ() * sin(angleX), tmp.getZ() * cos(angleX) - tmp.getY() * sin(angleX));
-            Location newLocation = center.clone().add(tmp);
-            if (bullets[i] == null || bullets[i].isDead())
-                bullets[i] = (ShulkerBullet)center.getWorld().spawnEntity(newLocation, EntityType.SHULKER_BULLET);
-            bullets[i].teleport(newLocation);
+            Location tmp = new Location(this.center.getWorld(), cos(off) * this.radius, sin(off) * this.radius, 0);
+            tmp = new Location(this.center.getWorld(), tmp.getX() * cos(this.angleY), tmp.getY(), tmp.getZ() * cos(this.angleY) + tmp.getX() * sin(this.angleY));
+            tmp = new Location(this.center.getWorld(), tmp.getX(), tmp.getY() * cos(this.angleX) + tmp.getZ() * sin(this.angleX), tmp.getZ() * cos(this.angleX) - tmp.getY() * sin(this.angleX));
+            Location newLocation = this.center.clone().add(tmp);
+            if (this.bullets[i] == null || this.bullets[i].isDead())
+                this.bullets[i] = (ShulkerBullet)this.center.getWorld().spawnEntity(newLocation, EntityType.SHULKER_BULLET);
+            this.bullets[i].teleport(newLocation);
             for (SFPlayer sfPlayer : ((SFGame)SamaGamesAPI.get().getGameManager().getGame()).getInGamePlayers().values())
             {
                 Player bukkitPlayer = sfPlayer.getPlayerIfOnline();
                 if (bukkitPlayer != null)
                         bukkitPlayer.spawnParticle(sfPlayer.hasCrossedRing(this) ? Particle.VILLAGER_HAPPY : Particle.END_ROD, newLocation, 1, 0, 0, 0, 0.04D);
             }
-            bullets[i].setVelocity(new Vector(0, 0.03, 0));
-            off += 2 * Math.PI / BULLETS_NUMBER;
+            this.bullets[i].setVelocity(new Vector(0, 0.03, 0));
+            off += 2 * PI / BULLETS_NUMBER;
         }
-        offset += 2 * Math.PI / 80;
+        this.offset += 2 * PI / 80;
     }
 
-    public static Ring str2ring(String str)
+    static Ring str2ring(String str)
     {
         if (str == null)
             return null;
@@ -80,12 +80,12 @@ public class Ring
 
     public boolean isPlayerInRing(Location location)
     {
-        Location tmp = location.clone().subtract(center);
-        tmp = new Location(center.getWorld(), tmp.getX() * cos(-angleY) - tmp.getZ() * sin(-angleY), tmp.getY(), tmp.getZ() * cos(-angleY) + tmp.getX() * sin(-angleY));
-        tmp = new Location(center.getWorld(), tmp.getX(), tmp.getY() * cos(-angleX) + tmp.getZ() * sin(-angleX), tmp.getZ() * cos(-angleX) - tmp.getY() * sin(-angleX));
+        Location tmp = location.clone().subtract(this.center);
+        tmp = new Location(this.center.getWorld(), tmp.getX() * cos(-this.angleY) - tmp.getZ() * sin(-this.angleY), tmp.getY(), tmp.getZ() * cos(-this.angleY) + tmp.getX() * sin(-this.angleY));
+        tmp = new Location(this.center.getWorld(), tmp.getX(), tmp.getY() * cos(-this.angleX) + tmp.getZ() * sin(-this.angleX), tmp.getZ() * cos(-this.angleX) - tmp.getY() * sin(-this.angleX));
         if (tmp.getZ() > 2 || tmp.getZ() < -2)
             return (false);
-        tmp = tmp.multiply(1D / radius);
+        tmp = tmp.multiply(1D / this.radius);
         double distance = tmp.distanceSquared(new Location(tmp.getWorld(), 0, 0, 0));
         return (distance <= 1);
     }

@@ -13,23 +13,23 @@ public class SFPlugin extends JavaPlugin
     @Override
     public void onEnable()
     {
-        api = SamaGamesAPI.get();
+        this.api = SamaGamesAPI.get();
 
-        game = new SFGame(this);
-        api.getGameManager().registerGame(game);
+        this.game = new SFGame(this);
+        this.api.getGameManager().registerGame(this.game);
 
         getServer().getPluginManager().registerEvents(new WorldListener(), this);
         getServer().getPluginManager().registerEvents(new PlayerListener(this), this);
-        api.getGameManager().setKeepPlayerCache(true);
+        this.api.getGameManager().setKeepPlayerCache(true);
     }
 
     public SamaGamesAPI getApi()
     {
-        return api;
+        return this.api;
     }
 
     public SFGame getGame()
     {
-        return game;
+        return this.game;
     }
 }

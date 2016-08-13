@@ -15,7 +15,6 @@ public class SFPlayer extends GamePlayer
 {
     private int score;
     private boolean onGround;
-    private boolean eliminated;
     private List<Ring> rings;
     private Location spawn;
     private ObjectiveSign objective;
@@ -35,7 +34,7 @@ public class SFPlayer extends GamePlayer
         this.updateScoreboard();
     }
 
-    public void updateScoreboard()
+    private void updateScoreboard()
     {
         Collection<SFPlayer> players = this.game.getInGamePlayers().values();
         this.objective.setLine(0, " ");
@@ -45,12 +44,12 @@ public class SFPlayer extends GamePlayer
         this.objective.updateLines();
     }
 
-    public void setScoreboard()
+    void setScoreboard()
     {
         this.objective.addReceiver(this.getOfflinePlayer());
     }
 
-    public void setScoreboardTime(String time)
+    void setScoreboardTime(String time)
     {
         this.objective.setDisplayName(ChatColor.AQUA + "FlyRing" + ChatColor.WHITE + " | " + ChatColor.AQUA + time);
         this.updateScoreboard();
@@ -58,34 +57,22 @@ public class SFPlayer extends GamePlayer
 
     public boolean isOnGround()
     {
-        return onGround;
+        return this.onGround;
     }
 
     public int getScore()
     {
-        return score;
+        return this.score;
     }
 
-    public void setOnGround(boolean onGround)
+    void setOnGround(boolean onGround)
     {
         this.onGround = onGround;
-        this.game.checkPlayers();
     }
 
     public void eliminate()
     {
         this.score = 0;
-        this.onGround = true;
-        this.eliminated = true;
-        Player player = this.getPlayerIfOnline();
-        if (player != null)
-            player.getInventory().clear();
-        this.game.checkPlayers();
-    }
-
-    public boolean isEliminated()
-    {
-        return eliminated;
     }
 
     public void setScore(int score)
@@ -103,7 +90,7 @@ public class SFPlayer extends GamePlayer
         this.rings.add(ring);
     }
 
-    public void setSpawn(Location location)
+    void setSpawn(Location location)
     {
         this.spawn = location;
     }
@@ -120,6 +107,6 @@ public class SFPlayer extends GamePlayer
 
     public long getTime()
     {
-        return time;
+        return this.time;
     }
 }

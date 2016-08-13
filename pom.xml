@@ -24,8 +24,8 @@
             <url>http://maven.samagames.net/developpers/</url>
         </repository>
         <repository>
-            <id>samagames-network</id>
-            <url>http://maven.samagames.net/network/</url>
+            <id>sk89q-repo</id>
+            <url>http://maven.sk89q.com/repo/</url>
         </repository>
     </repositories>
     <dependencies>
@@ -46,6 +46,11 @@
             <artifactId>SamaGamesAPI</artifactId>
             <version>4.0.0</version>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.sk89q.worldedit</groupId>
+            <artifactId>worldedit-bukkit</artifactId>
+            <version>LATEST</version>
         </dependency>
     </dependencies>
 </project>

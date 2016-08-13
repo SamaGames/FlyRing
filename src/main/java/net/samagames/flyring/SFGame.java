@@ -14,47 +14,51 @@ import org.bukkit.*;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class SFGame extends Game<SFPlayer>
 {
     private SFPlugin plugin;
-    private Location lobby;
-    private List<Location> spawns;
+    private Location spawn;
     private List<Area> walls;
     private List<Ring> rings;
+    private Area end;
     private int delay;
     private BukkitTask removeTask;
     private int time;
+    private List<SFPlayer> winners;
 
-    public SFGame(SFPlugin plugin)
+    SFGame(SFPlugin plugin)
     {
         super("skyfall", "Skyfall", "Gare à la chute", SFPlayer.class);
         this.plugin = plugin;
 
         IGameProperties properties = this.gameManager.getGameProperties();
-        this.spawns = new ArrayList<>();
         this.walls = new ArrayList<>();
         this.rings = new ArrayList<>();
-        this.lobby = LocationUtils.str2loc(properties.getConfig("lobby", new JsonPrimitive("world, 0, 64, 0")).getAsString());
+        this.winners = new ArrayList<>();
+        this.end = Area.str2area(properties.getConfig("end", new JsonPrimitive("world, 100, 64, 100, 200, 64, 200")).getAsString());
 
-        JsonArray array = properties.getConfig("spawns", new JsonArray()).getAsJsonArray();
-        array.forEach(json -> this.spawns.add(LocationUtils.str2loc(json.getAsString())));
-
-        array = properties.getConfig("walls", new JsonArray()).getAsJsonArray();
+        JsonArray array = properties.getConfig("walls", new JsonArray()).getAsJsonArray();
         array.forEach(json -> this.walls.add(AreaUtils.str2area(json.getAsString())));
 
         array = properties.getConfig("rings", new JsonArray()).getAsJsonArray();
         array.forEach(json -> this.rings.add(Ring.str2ring(json.getAsString())));
+
+        this.status = Status.STARTING;
+        MapLoader mapLoader = new MapLoader(this.plugin);
+        this.plugin.getServer().getScheduler().runTaskLater(this.plugin, () -> mapLoader.generate(this.plugin, this.plugin.getServer().getWorlds().get(0)), 1L);
     }
 
     @Override
     public void handleLogin(Player player)
     {
         super.handleLogin(player);
-        player.teleport(this.lobby);
+        player.teleport(this.spawn);
         player.setGameMode(GameMode.ADVENTURE);
         player.getInventory().clear();
         ItemStack wings = new ItemStack(Material.ELYTRA);
@@ -69,46 +73,60 @@ public class SFGame extends Game<SFPlayer>
     public void handleLogout(Player player)
     {
         super.handleLogout(player);
-        SFPlayer sfPlayer = this.getPlayer(player.getUniqueId());
-        if (sfPlayer != null)
-            sfPlayer.eliminate();
+        if (this.status != Status.IN_GAME)
+            return ;
+        Map<UUID, SFPlayer> playerMap = this.getInGamePlayers();
+        if (playerMap.size() == 0)
+            this.end();
+        else if (playerMap.size() == 1)
+        {
+            SFPlayer sfPlayer = playerMap.values().iterator().next();
+            this.win(sfPlayer, sfPlayer.getPlayerIfOnline());
+        }
     }
 
     @Override
     public void startGame()
     {
         super.startGame();
-        Iterator<Location> it = this.spawns.iterator();
+
+        ItemStack bow = new ItemStack(Material.BOW);
+        ItemMeta itemMeta = bow.getItemMeta();
+        itemMeta.spigot().setUnbreakable(true);
+        bow.setItemMeta(itemMeta);
+        bow.addEnchantment(Enchantment.ARROW_INFINITE, 1);
+        ItemStack arrow = new ItemStack(Material.ARROW);
+
         for (SFPlayer sfplayer : this.getInGamePlayers().values())
         {
             Player player = sfplayer.getPlayerIfOnline();
             if (player == null)
                 continue ;
-            if (!it.hasNext())
-                this.gameManager.kickPlayer(player, "Plus de place dans la partie. Contactez un administrateur.");
             else
             {
-                Location location = it.next();
-                player.teleport(location);
-                sfplayer.setSpawn(location);
+                player.teleport(this.spawn);
+                sfplayer.setSpawn(this.spawn);
                 sfplayer.setScoreboard();
+
+                player.getInventory().setItem(0, bow);
+                player.getInventory().setItem(35, arrow);
             }
             player.setHealth(4);
         }
         this.delay = 10;
-        this.removeTask = plugin.getServer().getScheduler().runTaskTimer(plugin, this::removeWalls, 20L, 20L);
-        this.rings.forEach(ring -> ring.display(plugin));
+        this.removeTask = this.plugin.getServer().getScheduler().runTaskTimer(this.plugin, this::removeWalls, 20L, 20L);
+        this.rings.forEach(ring -> ring.display(this.plugin));
         this.plugin.getServer().getScheduler().runTaskTimerAsynchronously(this.plugin, new Runnable()
         {
             @Override
             public void run()
             {
                 SFGame.this.time++;
-                for (SFPlayer arena : gamePlayers.values())
-                    arena.setScoreboardTime(this.formatTime(time));
+                for (SFPlayer arena : SFGame.this.gamePlayers.values())
+                    arena.setScoreboardTime(this.formatTime());
             }
 
-            public String formatTime(int time)
+            String formatTime()
             {
                 int mins = SFGame.this.time / 60;
                 int secs = SFGame.this.time - mins * 60;
@@ -120,12 +138,12 @@ public class SFGame extends Game<SFPlayer>
         }, 0L, 20L);
     }
 
-    public void removeWalls()
+    private void removeWalls()
     {
-        delay--;
-        if (delay == 0)
+        this.delay--;
+        if (this.delay == 0)
         {
-            for (Area wall : walls)
+            for (Area wall : this.walls)
             {
                 Location min = wall.getMin();
                 for (int i = 0; i <= wall.getSizeX(); i++)
@@ -135,44 +153,75 @@ public class SFGame extends Game<SFPlayer>
             }
             this.removeTask.cancel();
         }
-        if (delay <= 5)
+        if (this.delay <= 5)
             for (Player player : plugin.getServer().getOnlinePlayers())
             {
                 player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
-                Titles.sendTitle(player, 0, 30, 0, "", ChatColor.GOLD + (delay == 0 ? "Sautez et volez !" : "Suppression des murs dans " + delay + " secondes"));
+                Titles.sendTitle(player, 0, 30, 0, "", ChatColor.GOLD + (this.delay == 0 ? "Sautez et volez !" : "Suppression des murs dans " + this.delay + " secondes"));
             }
     }
 
     public List<Ring> getRings()
     {
-        return rings;
+        return this.rings;
     }
 
-    public void checkPlayers()
+    public void win(SFPlayer sfPlayer, Player player)
+    {
+        if (this.status == Status.FINISHED || this.winners.contains(sfPlayer))
+            return ;
+        sfPlayer.setOnGround(true);
+        this.winners.add(sfPlayer);
+        int where = this.winners.size();
+        this.coherenceMachine.getMessageManager().writeCustomMessage(player.getDisplayName() + ChatColor.YELLOW + " est arrivé " + where + (where == 1 ? "er" : "e") + ".", true);
+        List<SFPlayer> players = this.getInGamePlayers().values().stream().filter(sf -> !sf.isOnGround()).collect(Collectors.toList());
+        if (players.size() == 0)
+            end();
+        else if (where == 1)
+        {
+            this.coherenceMachine.getMessageManager().writeCustomMessage(ChatColor.YELLOW + "Il vous reste 1 minute avant la fin de la partie.", true);
+            this.plugin.getServer().getScheduler().runTaskLater(this.plugin, this::end, 120L);
+        }
+    }
+
+    private void end()
     {
         if (this.status == Status.FINISHED)
             return ;
-        List<SFPlayer> players = new ArrayList<>();
-        this.getInGamePlayers().values().forEach(sfPlayer -> {
-            if (!sfPlayer.isEliminated() && !sfPlayer.isOnGround())
-                return ;
-            if (!sfPlayer.isEliminated() && sfPlayer.isOnline())
-                players.add(sfPlayer);
-        });
+        this.status = Status.FINISHED;
+        List<SFPlayer> players = this.winners.stream().filter(sf -> sf.getPlayerIfOnline() != null).collect(Collectors.toList());
         if (players.isEmpty())
-        {
-            this.coherenceMachine.getTemplateManager().getBasicMessageTemplate().execute(Arrays.asList("Tout le monde est éliminé.", "Il n'y a aucun gagnant."));
-        }
+            this.coherenceMachine.getTemplateManager().getBasicMessageTemplate().execute(Collections.singletonList("Il n'y a aucun gagnant.. :/"));
         else
         {
             Collections.sort(players, new SFPlayerComparator());
-            this.coherenceMachine.getTemplateManager().getPlayerWinTemplate().execute(players.get(0).getPlayerIfOnline(), players.get(0).getScore());
+            if (players.size() > 2)
+                this.coherenceMachine.getTemplateManager().getPlayerLeaderboardWinTemplate().execute(players.get(0).getPlayerIfOnline(), players.get(1).getPlayerIfOnline(), players.get(2).getPlayerIfOnline(), players.get(0).getScore(), players.get(1).getScore(), players.get(2).getScore());
+            else if (players.size() > 1)
+                this.coherenceMachine.getTemplateManager().getPlayerLeaderboardWinTemplate().execute(players.get(0).getPlayerIfOnline(), players.get(1).getPlayerIfOnline(), null, players.get(0).getScore(), players.get(1).getScore(), 0);
+            else
+                this.coherenceMachine.getTemplateManager().getPlayerWinTemplate().execute(players.get(0).getPlayerIfOnline(), players.get(0).getScore());
         }
-        this.handleGameEnd();
+        this.plugin.getServer().getScheduler().runTaskLater(this.plugin, this::handleGameEnd, 40L);
     }
 
     public int getTime()
     {
         return this.time;
+    }
+
+    public Location getSpawn()
+    {
+        return this.spawn;
+    }
+
+    public Area getEndArea()
+    {
+        return this.end;
+    }
+
+    void setSpawn(Location spawn)
+    {
+        this.spawn = spawn;
     }
 }
