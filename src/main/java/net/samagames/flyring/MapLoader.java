@@ -90,7 +90,7 @@ class MapLoader
                 Cuboid cuboid1 = this.straightCuboids.get(i);
                 this.rotateVector(cuboid1.offset, rot);
                 tmp.subtract(cuboid1.offset);
-                cuboid2.clipboard.rotate2D(rot);
+                cuboid1.clipboard.rotate2D(rot);
                 cuboid1.clipboard.paste(editSession, new com.sk89q.worldedit.Vector(tmp.getX(), tmp.getY(), tmp.getZ()), false);
 
                 rot += 90;
