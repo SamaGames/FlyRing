@@ -65,7 +65,7 @@ class MapLoader
             }
     }
 
-    void generate(SFPlugin plugin, World world)
+    Location generate(SFPlugin plugin, World world)
     {
         int rot = 0;
 
@@ -101,11 +101,14 @@ class MapLoader
 
             plugin.getGame().setSpawn(tmp);
             plugin.getGame().setStatus(Status.WAITING_FOR_PLAYERS);
+
+            return tmp;
         }
         catch (MaxChangedBlocksException exception)
         {
             plugin.getLogger().log(Level.SEVERE, exception.getMessage(), exception);
             plugin.getServer().shutdown();
+            return null;
         }
     }
 

@@ -50,7 +50,7 @@ public class SFGame extends Game<SFPlayer>
 
         this.status = Status.STARTING;
         MapLoader mapLoader = new MapLoader(this.plugin);
-        this.plugin.getServer().getScheduler().runTaskLater(this.plugin, () -> mapLoader.generate(this.plugin, this.plugin.getServer().getWorlds().get(0)), 1L);
+        this.plugin.getServer().getScheduler().runTaskLater(this.plugin, () -> this.spawn = mapLoader.generate(this.plugin, this.plugin.getServer().getWorlds().get(0)), 1L);
     }
 
     @Override
