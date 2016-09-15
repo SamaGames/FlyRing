@@ -33,7 +33,7 @@ public class SFGame extends Game<SFPlayer>
 
     SFGame(SFPlugin plugin)
     {
-        super("skyfall", "Skyfall", "Gare à la chute", SFPlayer.class);
+        super("flyring", "FlyRing", "Gare à la chute", SFPlayer.class);
         this.plugin = plugin;
 
         IGameProperties properties = this.gameManager.getGameProperties();
@@ -148,7 +148,7 @@ public class SFGame extends Game<SFPlayer>
                 for (int i = 0; i <= wall.getSizeX(); i++)
                     for (int j = 0; j <= wall.getSizeY(); j++)
                         for (int k = 0; k <= wall.getSizeZ(); k++)
-                            min.clone().add(i, j, k).getBlock().setType(Material.AIR);//Je crois que Sonar aime pas ça
+                            min.clone().add(i, j, k).getBlock().setType(Material.AIR);
             }
             this.removeTask.cancel();
         }
