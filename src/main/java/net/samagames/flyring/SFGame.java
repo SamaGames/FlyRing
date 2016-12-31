@@ -193,7 +193,7 @@ public class SFGame extends Game<SFPlayer>
             this.coherenceMachine.getTemplateManager().getBasicMessageTemplate().execute(Collections.singletonList("Il n'y a aucun gagnant.. :/"));
         else
         {
-            Collections.sort(players, new SFPlayerComparator());
+            players.sort(new SFPlayerComparator());
             if (players.size() > 2)
                 this.coherenceMachine.getTemplateManager().getPlayerLeaderboardWinTemplate().execute(players.get(0).getPlayerIfOnline(), players.get(1).getPlayerIfOnline(), players.get(2).getPlayerIfOnline(), players.get(0).getScore(), players.get(1).getScore(), players.get(2).getScore());
             else if (players.size() > 1)
