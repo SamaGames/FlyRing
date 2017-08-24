@@ -13,7 +13,7 @@ Pour plus de détails, référez-vous au texte de licence disponible [ici](LICEN
 - Type : Mini-Jeu
 - État : Non terminé
 - Développeur(s) : Rigner
-- CDC (Si existant) : [FlyRing](https://www.samagames.net/ressources/flyrings.pdf)
+- CDC (Si existant) : [FlyRing](https://samagames.net/ressources/flyrings.pdf)
 
 
 ## Description
